@@ -70,6 +70,20 @@ lci_wired_eth0() {
 }
 ROOTFS_POSTPROCESS_COMMAND += "lci_wired_eth0;"
 
+# Under sysvinit the serial getty (respawn) is ordered after "l5:5:wait:.../rc 5"
+# in /etc/inittab, so a hang in an rc5 service blocks the login prompt. Move the
+# ttyPS0 getty ahead of the runlevel rc entries so a login is always available.
+lci_serial_getty_before_rc() {
+    it="${IMAGE_ROOTFS}${sysconfdir}/inittab"
+    [ -f "$it" ] || return 0
+    line=$(grep -m1 '^PS0:' "$it") || return 0
+    [ -n "$line" ] || return 0
+    sed -i '/^PS0:/d' "$it"
+    awk -v ins="$line" '/^l0:0:wait/ && !x {print ins; x=1} {print}' "$it" > "$it.tmp" && mv "$it.tmp" "$it"
+}
+ROOTFS_POSTPROCESS_COMMAND += "lci_serial_getty_before_rc;"
+
+
 # --- LCI update bundle -------------------------------------------------------
 # Device identity (MANIFEST_*) and the bundle file name (LCI_BUNDLE_NAME) are
 # device-specific and set by the machine conf (e.g. conf/machine/vb8034.conf).
