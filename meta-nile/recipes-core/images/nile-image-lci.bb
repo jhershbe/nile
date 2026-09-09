@@ -8,8 +8,18 @@ COMPATIBLE_MACHINE = "vb8034"
 
 IMAGE_FEATURES += "ssh-server-openssh"
 
+# Root is a read-only squashfs: run postinsts and update-alternatives at build
+# time (so symlinks exist in the image) and mount /var, /tmp, /run as tmpfs
+# instead of trying to write the read-only root at boot.
+IMAGE_FEATURES += "read-only-rootfs"
+
+# nirtcfg/libnitargetcfg can only configure on the target (they read the U-Boot
+# environment), so allow them to defer to a one-time first-boot run.
+IMAGE_FEATURES += "read-only-rootfs-delayed-postinsts"
+
 IMAGE_INSTALL = "\
     packagegroup-core-boot \
+    libubootenv-bin \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 
