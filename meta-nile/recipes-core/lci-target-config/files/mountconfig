@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+#  Copyright (c) 2013-2015 National Instruments.
+#
+#  All rights reserved.
+#
+
+partition_label="boot-config"
+volume_label="config"
+volume_number="3"
+mount_point="/etc/natinst/share"
+mount_args="-o sync"
+mimetypes="mime.types"
+default_setting_dir="/etc/natinst"
+
+# include common utilities
+source /etc/init.d/mountutils
+
+# Bail out on first error
+set -o errexit
+
+mount_config()
+{
+        mount_ubi_volume "$partition_label" "$volume_label" "$volume_number" "$mount_point" "$mount_args"
+        chown lvuser:ni $mount_point
+        chmod ug=rwx,o=rx $mount_point
+
+        # if ni-rt.ini exists, set its modification time to the current (boot) time.
+        # this avoids problems with software components that check to see if the timestamp
+        # is newer in order to determine whether to reread it.
+        if [ -f $mount_point/ni-rt.ini ]; then
+                touch $mount_point/ni-rt.ini
+        fi
+}
+
+unmount_config()
+{
+        umount $mount_point
+}
+
+case "$1" in
+        start) mount_config;;
+        stop) unmount_config;;
+esac
+
+# Creating log directory for SystemWebServer
+mkdir -p $mount_point/log
+
+# Copying over mime.types for SystemWebServer
+if [ ! -f $mount_point/$mimetypes ]; then
+    cp $default_setting_dir/$mimetypes $mount_point/$mimetypes
+fi
+
+exit 0

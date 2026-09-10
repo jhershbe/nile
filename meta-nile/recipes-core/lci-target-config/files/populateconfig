@@ -1,0 +1,67 @@
+#!/bin/sh
+# Copyright (c) 2012-2015 National Instruments.
+# All rights reserved.
+
+if [ "$1" = "start" ]
+then
+	# Make sure that there's a machine-id file for /etc/machine-id to
+	# point to. We use the kernel's uuid generator, not dbus-uuidgen,
+	# because dbus-uuidgen uses the timestamp as the last four octets
+	# which will usually end up being something like "00000001".
+	if [ ! -e /mnt/cal/machine-id ]; then
+		cat /proc/sys/kernel/random/uuid | sed s/-//g > /mnt/cal/machine-id
+	fi
+
+        mkdir -p /etc/natinst/share/ssh
+
+        # BEGIN: Populate the certstore.
+        #
+        # IMPORTANT NOTE: Changes to any code in this section may require
+        #  updating the "postinst" scripts of the noted components.
+
+        # nisslinit
+        mkdir -p "/etc/natinst/share/certstore"
+        mkdir -p "/etc/natinst/share/certstore/open_csrs"
+        mkdir -p "/etc/natinst/share/certstore/server_certs"
+        mkdir -p "/etc/natinst/share/certstore/temp"
+
+        chown root:root "/etc/natinst/share/certstore"
+        chmod 755 "/etc/natinst/share/certstore"
+
+        chown webserv:root "/etc/natinst/share/certstore/open_csrs"
+        chmod 700 "/etc/natinst/share/certstore/open_csrs"
+
+        chown webserv:niwscerts "/etc/natinst/share/certstore/server_certs"
+        chmod 750 "/etc/natinst/share/certstore/server_certs"
+
+        chown webserv:root "/etc/natinst/share/certstore/temp"
+        chmod 700 "/etc/natinst/share/certstore/temp"
+
+        touch "/etc/natinst/share/certstore/nexthandle.dat"
+        chown webserv:root "/etc/natinst/share/certstore/nexthandle.dat"
+        chmod 600 "/etc/natinst/share/certstore/nexthandle.dat"
+
+        # wireless certificates
+        mkdir -p "/etc/natinst/share/certstore/wireless/trusted"
+        mkdir -p "/etc/natinst/share/certstore/wireless/pac"
+        mkdir -p "/etc/natinst/share/certstore/wireless/client"
+
+        chown webserv:root "/etc/natinst/share/certstore/wireless"
+        chmod 700 "/etc/natinst/share/certstore/wireless"
+
+        chown webserv:root "/etc/natinst/share/certstore/wireless/trusted"
+        chmod 700 "/etc/natinst/share/certstore/wireless/trusted"
+
+        chown webserv:root "/etc/natinst/share/certstore/wireless/pac"
+        chmod 700 "/etc/natinst/share/certstore/wireless/pac"
+
+        chown webserv:root "/etc/natinst/share/certstore/wireless/client"
+        chmod 700 "/etc/natinst/share/certstore/wireless/client"
+
+        # ws_core
+        touch /etc/natinst/share/certstore/wsapi.key
+        chown webserv:niwscerts /etc/natinst/share/certstore/wsapi.key
+        chmod 640 /etc/natinst/share/certstore/wsapi.key
+
+        # END: Populate the certstore.
+fi

@@ -20,6 +20,7 @@ IMAGE_FEATURES += "read-only-rootfs-delayed-postinsts"
 IMAGE_INSTALL = "\
     packagegroup-core-boot \
     libubootenv-bin \
+    lci-target-config \
     ${CORE_IMAGE_EXTRA_INSTALL} \
     "
 

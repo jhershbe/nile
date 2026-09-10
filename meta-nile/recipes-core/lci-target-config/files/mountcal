@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+#  Copyright (c) 2013-2015 National Instruments.
+#
+#  All rights reserved.
+#
+
+partition_label="root"
+volume_label="cal"
+volume_number="5"
+mount_point="/mnt/cal"
+mount_args="-o sync"
+
+# include common utilities
+source /etc/init.d/mountutils
+
+# Bail out on first error
+set -o errexit
+
+mount_config()
+{
+	mount_ubi_volume "$partition_label" "$volume_label" "$volume_number" "$mount_point" "$mount_args"
+	chown lvuser:ni $mount_point
+	chmod ug=rwx,o=rx $mount_point
+}
+
+unmount_config()
+{
+	umount $mount_point
+}
+
+case "$1" in
+	start) mount_config;;
+	stop) unmount_config;;
+esac
+
+exit 0
