@@ -5,6 +5,7 @@ Unlike nile-image-dev it carries no developer access."
 LICENSE = "MIT"
 
 COMPATIBLE_MACHINE = "vb8034"
+DEPENDS += "lci-legacy-sfp"
 
 IMAGE_FEATURES += "ssh-server-openssh"
 
@@ -163,9 +164,7 @@ EOF
     # Read the persistent squashfs symlink from DEPLOY_DIR_IMAGE (IMGDEPLOYDIR is
     # emptied once do_image_complete is restored from sstate).
     install -m 0644 "${DEPLOY_DIR_IMAGE}/${IMAGE_LINK_NAME}.squashfs" "${work}/root.squashfs"
-    # SFP stand-in (2048-aligned zero image). The approved payload is delivered
-    # by the lci-legacy-artifacts IPK once published.
-    dd if=/dev/zero of="${work}/sfp.iso" bs=2048 count=1 2>/dev/null
+    install -m 0644 "${STAGING_DATADIR}/lci-legacy-sfp/sfp.iso" "${work}/sfp.iso"
 
     # The updater ubiupdatevol's these with -s <size>; they must be 2048-aligned.
     # (awk, not expr: expr exits 1 when the remainder is 0, tripping set -e.)
@@ -174,6 +173,9 @@ EOF
         rem=`awk "BEGIN{print ${sz}%2048}"`
         if [ "${rem}" != "0" ]; then
             bbfatal "${f} size (${sz}) is not a multiple of 2048 bytes"
+        fi
+        if [ "${f}" = "sfp.iso" ] && [ "${sz}" -lt 614400 ]; then
+            bbfatal "${f} size (${sz}) is below the 300-sector CD-ROM minimum"
         fi
     done
 
