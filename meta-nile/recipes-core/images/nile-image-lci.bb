@@ -87,6 +87,17 @@ lci_wired_eth0() {
 }
 ROOTFS_POSTPROCESS_COMMAND += "lci_wired_eth0;"
 
+# The legacy LCI feed repoints these standard commands at NI binaries that
+# request the legacy /lib/ld-linux.so.3 interpreter, so hostname (prompt/init)
+# and reboot fail with "not found" unless that loader name exists. Point them
+# back at the standard implementations: sysvinit's reboot and the busybox
+# hostname applet (enabled via the busybox hostname.cfg bbappend).
+lci_fix_softfloat_symlinks() {
+    ln -sf reboot.sysvinit ${IMAGE_ROOTFS}${base_sbindir}/reboot
+    ln -sf busybox ${IMAGE_ROOTFS}${base_bindir}/hostname
+}
+ROOTFS_POSTPROCESS_COMMAND += "lci_fix_softfloat_symlinks;"
+
 # Under sysvinit the serial getty (respawn) is ordered after "l5:5:wait:.../rc 5"
 # in /etc/inittab, so a hang in an rc5 service blocks the login prompt. Move the
 # ttyPS0 getty ahead of the runlevel rc entries so a login is always available.
