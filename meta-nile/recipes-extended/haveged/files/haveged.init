@@ -1,0 +1,47 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          haveged
+# Required-Start:
+# Required-Stop:
+# Default-Start:     S
+# Default-Stop:
+# Short-Description: Seed the kernel CRNG early via the haveged entropy daemon
+# Description:       Linux 4.x getrandom() blocks until the CRNG is initialised.
+#                    The Zynq-7000 has no hardware RNG, so on a headless board
+#                    sshd/TLS hang for minutes after boot. Start haveged in rcS,
+#                    before sshd, so entropy is available immediately.
+### END INIT INFO
+
+DAEMON=/usr/sbin/haveged
+PIDFILE=/var/run/haveged.pid
+
+[ -x "$DAEMON" ] || exit 0
+
+case "$1" in
+	start)
+		echo -n "Starting entropy daemon: haveged"
+		# haveged's CPU-cache auto-detection fails on the Zynq-7000
+		# Cortex-A9 ("Couldn't initialize HAVEGE rng"), so pass the A9's
+		# 32 KiB L1 instruction/data cache sizes explicitly.
+		start-stop-daemon --start --quiet --pidfile "$PIDFILE" \
+			--exec "$DAEMON" -- -w 1024 -d 32 -i 32 -p "$PIDFILE"
+		echo "."
+		;;
+	stop)
+		echo -n "Stopping entropy daemon: haveged"
+		start-stop-daemon --stop --quiet --pidfile "$PIDFILE"
+		rm -f "$PIDFILE"
+		echo "."
+		;;
+	restart|force-reload)
+		"$0" stop
+		sleep 1
+		"$0" start
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|force-reload}" >&2
+		exit 1
+		;;
+esac
+
+exit 0
