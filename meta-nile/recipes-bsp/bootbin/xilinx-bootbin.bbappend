@@ -1,1 +1,1 @@
-do_configure:append:vb8034[depends] = " linux-xlnx:do_deploy"
+do_configure:append:vb8034[depends] = " virtual/kernel:do_deploy"
