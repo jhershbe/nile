@@ -49,9 +49,8 @@ do_kernel_configme:append:vb8034() {
         # Our update payload is an lzo-compressed squashfs mounted directly as the
         # root fs (no initramfs), so squashfs+lzo must be built in, not modules.
         printf 'CONFIG_SQUASHFS=y\nCONFIG_SQUASHFS_LZO=y\n' >> ${B}/.config
-        # LCI USB gadget (g_lci) + its ChipIdea UDC built in, so the boot cmdline
-        # g_lci.* module params apply and the device enumerates at boot. The Zynq
-        # ChipIdea controller needs the usb-nop-xceiv PHY (usb_phy0) built in too,
-        # or the controller defers forever and no UDC registers.
-        printf 'CONFIG_USB_GADGET=y\nCONFIG_USB_CHIPIDEA=y\nCONFIG_USB_CHIPIDEA_UDC=y\nCONFIG_USB_ULPI_BUS=y\nCONFIG_USB_CHIPIDEA_ULPI=y\nCONFIG_NOP_USB_XCEIV=y\nCONFIG_USB_LIBCOMPOSITE=y\nCONFIG_USB_F_HID_BULK=y\nCONFIG_USB_F_MASS_STORAGE=y\nCONFIG_USB_G_LCI=y\n' >> ${B}/.config
+        # Keep the controller and PHY built in, but load g_lci after the MTD
+        # partitions exist: its CD-ROM backing file is an mtdblock node created
+        # after the early UDC probe. modprobe consumes the g_lci.* boot options.
+        printf 'CONFIG_USB_GADGET=y\nCONFIG_USB_CHIPIDEA=y\nCONFIG_USB_CHIPIDEA_UDC=y\nCONFIG_USB_ULPI_BUS=y\nCONFIG_USB_CHIPIDEA_ULPI=y\nCONFIG_NOP_USB_XCEIV=y\nCONFIG_USB_LIBCOMPOSITE=y\nCONFIG_USB_F_HID_BULK=y\nCONFIG_USB_F_MASS_STORAGE=y\nCONFIG_USB_G_LCI=m\n' >> ${B}/.config
 }

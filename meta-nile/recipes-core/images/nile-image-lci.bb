@@ -34,7 +34,7 @@ IMAGE_INSTALL_NODEPS:append = " nilcidriver-vb8034 lciutils lci-legacy-artifacts
 # no hardware RNG, so on a headless board sshd/TLS/web hang for minutes after
 # boot waiting for entropy. haveged (CPU-timing-jitter daemon) seeds the pool
 # early (its init script runs before sshd), so connections work right after boot.
-IMAGE_INSTALL:append = " haveged"
+IMAGE_INSTALL:append = " haveged lci-runtime"
 
 # Read-only squashfs is the updater's root payload; the FIT lci.itb and bootfs
 # UBI volume are produced by lci-fitimage (EXTRA_IMAGEDEPENDS in vb8034.conf).
@@ -98,6 +98,21 @@ lci_fix_softfloat_symlinks() {
     ln -sf busybox ${IMAGE_ROOTFS}${base_bindir}/hostname
 }
 ROOTFS_POSTPROCESS_COMMAND += "lci_fix_softfloat_symlinks;"
+
+# The NI feed binaries (vb8034Daemon, nirtcfg, fwupdate, ...) are hard-float but
+# request the legacy interpreter name /lib/ld-linux.so.3; provide it.
+lci_legacy_loader_link() {
+    ln -sf ld-linux-armhf.so.3 ${IMAGE_ROOTFS}${base_libdir}/ld-linux.so.3
+}
+ROOTFS_POSTPROCESS_COMMAND += "lci_legacy_loader_link;"
+
+# OE builds ld.so.cache with ldconfig -X (no links), and the feed postinsts that
+# would create soname links are stripped above, so e.g. libnitargetcfg.so.1 is in
+# the cache but missing on disk. Create the soname links for the NI libraries.
+lci_ni_soname_links() {
+    ldconfig -n ${IMAGE_ROOTFS}${libdir}/arm-linux-gnueabihf
+}
+ROOTFS_POSTPROCESS_COMMAND += "lci_ni_soname_links;"
 
 # Under sysvinit the serial getty (respawn) is ordered after "l5:5:wait:.../rc 5"
 # in /etc/inittab, so a hang in an rc5 service blocks the login prompt. Move the
