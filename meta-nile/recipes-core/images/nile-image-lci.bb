@@ -151,7 +151,8 @@ ROOTFS_POSTPROCESS_COMMAND += "lci_serial_getty_before_rc;"
 # device-specific and set by the machine conf (e.g. conf/machine/vb8034.conf).
 # DeviceCode is gated against the U-Boot env by the device-side
 # firmware_update.sh, so it must match the device exactly.
-LCI_FW_VERSION ?= "${DISTRO_VERSION}"
+# The ni-central pipeline sets BUILDNAME to the workspace version (e.g. 26.8.0d42).
+LCI_FW_VERSION ?= "${BUILDNAME}"
 
 # Firmware signing.
 #  - LCI_SIGN_METHOD=linuxsigning (the pipeline path): production 'lci' key on
