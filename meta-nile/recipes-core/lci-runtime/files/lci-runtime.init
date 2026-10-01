@@ -33,6 +33,11 @@ case "$1" in
             cdrom="$cdrom" file="$backing_file"
         test -z "$manufacturer" || set -- "$@" manufacturer="$manufacturer"
         /sbin/modprobe g_lci "$@" || exit $?
+        # Wait for udev to apply the lvuser ownership of the new hidg nodes.
+        udevadm settle
+        mkdir -p /var/run/natinst
+        chown lvuser:ni /var/run/natinst
+        chmod 775 /var/run/natinst
         start-stop-daemon -S -q -o -b -c lvuser:ni -n "$NAME" -a "$DAEMON"
         ;;
     stop)
