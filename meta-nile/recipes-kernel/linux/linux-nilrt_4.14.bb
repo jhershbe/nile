@@ -53,4 +53,8 @@ do_kernel_configme:append:vb8034() {
         # partitions exist: its CD-ROM backing file is an mtdblock node created
         # after the early UDC probe. modprobe consumes the g_lci.* boot options.
         printf 'CONFIG_USB_GADGET=y\nCONFIG_USB_CHIPIDEA=y\nCONFIG_USB_CHIPIDEA_UDC=y\nCONFIG_USB_ULPI_BUS=y\nCONFIG_USB_CHIPIDEA_ULPI=y\nCONFIG_NOP_USB_XCEIV=y\nCONFIG_USB_LIBCOMPOSITE=y\nCONFIG_USB_F_HID_BULK=y\nCONFIG_USB_F_MASS_STORAGE=y\nCONFIG_USB_G_LCI=m\n' >> ${B}/.config
+        # The LCI daemon drives the FPGA through /dev/uio0 (uio_lci).
+        printf 'CONFIG_UIO=y\nCONFIG_UIO_LCI=y\n' >> ${B}/.config
+        # Zynq SWDT for the daemon, nowayout as in the legacy ni_lci_defconfig.
+        printf 'CONFIG_WATCHDOG=y\nCONFIG_WATCHDOG_CORE=y\nCONFIG_WATCHDOG_NOWAYOUT=y\nCONFIG_CADENCE_WATCHDOG=y\n' >> ${B}/.config
 }
