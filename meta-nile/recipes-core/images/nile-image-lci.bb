@@ -121,6 +121,17 @@ lci_fw_env_tool_links() {
 }
 ROOTFS_POSTPROCESS_COMMAND += "lci_fw_env_tool_links;"
 
+# libnitargetcfg reports the firmware version (LCI_GetDeviceInfo /
+# LCI_GetFirmwareVersion) by running the legacy nisafemodeversion helper, which
+# prints /etc/natinst/version; without them the device reports "UNKNOWN".
+lci_firmware_version() {
+    install -d ${IMAGE_ROOTFS}${sysconfdir}/natinst ${IMAGE_ROOTFS}/usr/local/natinst/bin
+    echo "${LCI_FW_VERSION}" > ${IMAGE_ROOTFS}${sysconfdir}/natinst/version
+    printf '#!/bin/sh\ncat /etc/natinst/version\n' > ${IMAGE_ROOTFS}/usr/local/natinst/bin/nisafemodeversion
+    chmod 0755 ${IMAGE_ROOTFS}/usr/local/natinst/bin/nisafemodeversion
+}
+ROOTFS_POSTPROCESS_COMMAND += "lci_firmware_version;"
+
 # Under sysvinit the serial getty (respawn) is ordered after "l5:5:wait:.../rc 5"
 # in /etc/inittab, so a hang in an rc5 service blocks the login prompt. Move the
 # ttyPS0 getty ahead of the runlevel rc entries so a login is always available.
