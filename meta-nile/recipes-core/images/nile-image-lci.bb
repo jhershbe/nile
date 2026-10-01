@@ -28,7 +28,7 @@ IMAGE_INSTALL = "\
 # LCI runtime, installed from the ni-lci feed. These are feed-only packages
 # (no local OE recipe), so use IMAGE_INSTALL_NODEPS; opkg resolves their runtime
 # Depends from the configured feeds at do_rootfs.
-IMAGE_INSTALL_NODEPS:append = " nilcidriver-vb8034 lciutils lci-legacy-artifacts-vb8034"
+IMAGE_INSTALL_NODEPS:append = " nilcidriver-vb8034 lciutils lci-legacy-artifacts-vb8034 ni-auth"
 
 # Linux 4.x getrandom() blocks until the CRNG is seeded, but the Zynq-7000 PS has
 # no hardware RNG, so on a headless board sshd/TLS/web hang for minutes after
@@ -131,6 +131,15 @@ lci_firmware_version() {
     chmod 0755 ${IMAGE_ROOTFS}/usr/local/natinst/bin/nisafemodeversion
 }
 ROOTFS_POSTPROCESS_COMMAND += "lci_firmware_version;"
+
+# niauth_daemon and its clients (e.g. vb8034Daemon as lvuser) create sockets in
+# /var/local/natinst/ipc, which is on the read-only root; keep it on tmpfs.
+lci_niauth_ipc_volatile() {
+    install -d ${IMAGE_ROOTFS}/var/local/natinst ${IMAGE_ROOTFS}${sysconfdir}/default/volatiles
+    ln -sfn /var/volatile/natinst/ipc ${IMAGE_ROOTFS}/var/local/natinst/ipc
+    echo "d root root 1777 /var/volatile/natinst/ipc none" > ${IMAGE_ROOTFS}${sysconfdir}/default/volatiles/99_lci_niauth
+}
+ROOTFS_POSTPROCESS_COMMAND += "lci_niauth_ipc_volatile;"
 
 # Under sysvinit the serial getty (respawn) is ordered after "l5:5:wait:.../rc 5"
 # in /etc/inittab, so a hang in an rc5 service blocks the login prompt. Move the
