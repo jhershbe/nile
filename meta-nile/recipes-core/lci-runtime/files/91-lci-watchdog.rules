@@ -1,0 +1,2 @@
+# Let vb8034Daemon (lvuser) open and pet the SWDT; without this it never arms it.
+KERNEL=="watchdog", OWNER="lvuser", GROUP="ni"

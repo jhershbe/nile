@@ -34,7 +34,7 @@ IMAGE_INSTALL_NODEPS:append = " nilcidriver-vb8034 lciutils lci-legacy-artifacts
 # no hardware RNG, so on a headless board sshd/TLS/web hang for minutes after
 # boot waiting for entropy. haveged (CPU-timing-jitter daemon) seeds the pool
 # early (its init script runs before sshd), so connections work right after boot.
-IMAGE_INSTALL:append = " haveged lci-runtime"
+IMAGE_INSTALL:append = " haveged lci-runtime lci-runtime-watchdog"
 
 # Read-only squashfs is the updater's root payload; the FIT lci.itb and bootfs
 # UBI volume are produced by lci-fitimage (EXTRA_IMAGEDEPENDS in vb8034.conf).

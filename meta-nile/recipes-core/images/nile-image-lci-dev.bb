@@ -10,6 +10,9 @@ require nile-image-lci.bb
 # VB-8034.cfg (same device/firmware.info inside; only the outer file differs).
 LCI_BUNDLE_NAME = "VB-8034-dev.cfg"
 
+# Keep the daemon from arming the nowayout SWDT so its crashes can be debugged.
+IMAGE_INSTALL:remove = "lci-runtime-watchdog"
+
 # --- Legacy-matching dev access (verified against VB2-30A1D14, 2026-09-08) ----
 # The legacy debug image allows root login over SSH with password 'nigel' and a
 # getty on ttyPS0. Reproduce that here so the same tooling keeps working.
