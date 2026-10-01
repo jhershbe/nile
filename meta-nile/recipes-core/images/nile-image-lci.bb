@@ -114,6 +114,13 @@ lci_ni_soname_links() {
 }
 ROOTFS_POSTPROCESS_COMMAND += "lci_ni_soname_links;"
 
+# libnitargetcfg (GetTargetID) execs the legacy /sbin/fw_printenv path.
+lci_fw_env_tool_links() {
+    ln -sf ${bindir}/fw_printenv ${IMAGE_ROOTFS}${base_sbindir}/fw_printenv
+    ln -sf ${bindir}/fw_setenv ${IMAGE_ROOTFS}${base_sbindir}/fw_setenv
+}
+ROOTFS_POSTPROCESS_COMMAND += "lci_fw_env_tool_links;"
+
 # Under sysvinit the serial getty (respawn) is ordered after "l5:5:wait:.../rc 5"
 # in /etc/inittab, so a hang in an rc5 service blocks the login prompt. Move the
 # ttyPS0 getty ahead of the runlevel rc entries so a login is always available.
