@@ -28,14 +28,16 @@ IMAGE_INSTALL = "\
 # LCI runtime, installed from the ni-lci feed. These are feed-only packages
 # (no local OE recipe), so use IMAGE_INSTALL_NODEPS; opkg resolves their runtime
 # Depends from the configured feeds at do_rootfs. vb8034Daemon dlopens nicurl's
-# libcurlimpl, so no package depends on it.
-IMAGE_INSTALL_NODEPS:append = " nilcidriver-vb8034 lciutils lci-legacy-artifacts-vb8034 ni-auth nicurl"
+# libcurlimpl, so no package depends on it. The system web server has no
+# hard-float port yet; lci-legacy-webserver carries the legacy one as a
+# chroot, started by lci-legacy-webserver-chroot.
+IMAGE_INSTALL_NODEPS:append = " nilcidriver-vb8034 lciutils lci-legacy-artifacts-vb8034 ni-auth nicurl lci-legacy-webserver"
 
 # Linux 4.x getrandom() blocks until the CRNG is seeded, but the Zynq-7000 PS has
 # no hardware RNG, so on a headless board sshd/TLS/web hang for minutes after
 # boot waiting for entropy. haveged (CPU-timing-jitter daemon) seeds the pool
 # early (its init script runs before sshd), so connections work right after boot.
-IMAGE_INSTALL:append = " haveged lci-runtime lci-runtime-watchdog"
+IMAGE_INSTALL:append = " haveged lci-runtime lci-runtime-watchdog lci-legacy-webserver-chroot"
 
 # Read-only squashfs is the updater's root payload; the FIT lci.itb and bootfs
 # UBI volume are produced by lci-fitimage (EXTRA_IMAGEDEPENDS in vb8034.conf).

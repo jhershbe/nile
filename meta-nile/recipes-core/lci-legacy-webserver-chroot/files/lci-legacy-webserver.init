@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# Run the legacy (soft-float) system web server, which has no hard-float port
+# yet, in a chroot of the legacy rootfs subset that lci-legacy-webserver
+# installs. Starts in the legacy order: after the daemon, nisvcloc then
+# systemWebServer.
+
+ROOT=/usr/lib/lci-legacy-webserver
+
+mounted() {
+    grep -q " $ROOT$1 " /proc/mounts
+}
+
+bind() {
+    mounted "$1" || mount --bind "$1" "$ROOT$1"
+}
+
+case "$1" in
+    start)
+        test -x $ROOT/usr/local/natinst/share/NIWebServer/SystemWebServer || exit 0
+        for d in /proc /sys /dev /dev/pts /etc/natinst/share /mnt/cal; do
+            bind $d || exit $?
+        done
+        # The legacy /var/{log,lock,run,tmp,cache} and web server temp/log
+        # links all point into its tmpfs /var/volatile.
+        v=$ROOT/var/volatile
+        mounted /var/volatile || mount -t tmpfs -o mode=0755 tmpfs $v || exit $?
+        mkdir -p $v/cache $v/lock $v/log/webserver $v/run/natinst $v/tmp $v/wstemp
+        chmod 1777 $v/lock $v/log $v/log/webserver $v/run/natinst $v/tmp $v/wstemp
+        chroot $ROOT /usr/local/natinst/etc/init.d/nisvcloc start
+        chroot $ROOT /usr/local/natinst/etc/init.d/systemWebServer start
+        ;;
+    stop)
+        test -x $ROOT/usr/local/natinst/share/NIWebServer/SystemWebServer || exit 0
+        chroot $ROOT /usr/local/natinst/etc/init.d/systemWebServer stop
+        chroot $ROOT /usr/local/natinst/etc/init.d/nisvcloc stop
+        ;;
+    restart)
+        "$0" stop
+        "$0" start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0
