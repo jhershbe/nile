@@ -155,6 +155,14 @@ lci_serial_getty_before_rc() {
 }
 ROOTFS_POSTPROCESS_COMMAND += "lci_serial_getty_before_rc;"
 
+# The kernel and BOOT.bin boot from the bootfs volume, and the gadget serves the
+# SFP CD-ROM from the sfp1/sfp2 partition; the root copies are never read.
+lci_drop_unused_boot_payloads() {
+    rm -rf ${IMAGE_ROOTFS}/boot/*
+    rm -f ${IMAGE_ROOTFS}/usr/local/natinst/share/lci/sfp.iso ${IMAGE_ROOTFS}/usr/local/natinst/share/lci/sfp.iso.sig
+}
+ROOTFS_POSTPROCESS_COMMAND += "lci_drop_unused_boot_payloads;"
+
 
 # --- LCI update bundle -------------------------------------------------------
 # Device identity (MANIFEST_*) and the bundle file name (LCI_BUNDLE_NAME) are
