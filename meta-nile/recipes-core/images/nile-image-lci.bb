@@ -27,8 +27,9 @@ IMAGE_INSTALL = "\
 
 # LCI runtime, installed from the ni-lci feed. These are feed-only packages
 # (no local OE recipe), so use IMAGE_INSTALL_NODEPS; opkg resolves their runtime
-# Depends from the configured feeds at do_rootfs.
-IMAGE_INSTALL_NODEPS:append = " nilcidriver-vb8034 lciutils lci-legacy-artifacts-vb8034 ni-auth"
+# Depends from the configured feeds at do_rootfs. vb8034Daemon dlopens nicurl's
+# libcurlimpl, so no package depends on it.
+IMAGE_INSTALL_NODEPS:append = " nilcidriver-vb8034 lciutils lci-legacy-artifacts-vb8034 ni-auth nicurl"
 
 # Linux 4.x getrandom() blocks until the CRNG is seeded, but the Zynq-7000 PS has
 # no hardware RNG, so on a headless board sshd/TLS/web hang for minutes after
