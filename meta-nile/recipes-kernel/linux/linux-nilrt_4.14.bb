@@ -57,4 +57,6 @@ do_kernel_configme:append:vb8034() {
         printf 'CONFIG_UIO=y\nCONFIG_UIO_LCI=y\n' >> ${B}/.config
         # Zynq SWDT for the daemon, nowayout as in the legacy ni_lci_defconfig.
         printf 'CONFIG_WATCHDOG=y\nCONFIG_WATCHDOG_CORE=y\nCONFIG_WATCHDOG_NOWAYOUT=y\nCONFIG_CADENCE_WATCHDOG=y\n' >> ${B}/.config
+        # Built in as on legacy; LCI clients see the IPv6 addresses in the device info.
+        printf 'CONFIG_IPV6=y\n' >> ${B}/.config
 }
