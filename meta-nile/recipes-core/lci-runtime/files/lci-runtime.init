@@ -38,6 +38,9 @@ case "$1" in
         mkdir -p /var/run/natinst
         chown lvuser:ni /var/run/natinst
         chmod 775 /var/run/natinst
+        # The daemon gives DMA poll threads SCHED_FIFO max priority (legacy
+        # granted CAP_SYS_NICE); without it MSO runs with digital lines fail.
+        ulimit -r 99
         start-stop-daemon -S -q -o -b -c lvuser:ni -n "$NAME" -a "$DAEMON"
         ;;
     stop)
